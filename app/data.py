@@ -1,6 +1,9 @@
 from flask import Flask, render_template_string
 import pandas as pd
 import os
+import matplotlib.pyplot as plt
+import io
+import base64
 
 app = Flask(__name__)
 
@@ -93,5 +96,125 @@ def load_dataframe():
     
     return render_template_string(html_template)
 
-if __name__ == '__main__':
+@app.route('/volume-analysis')
+def volume_analysis():
+    """Visualize average yearly volume for all three periods as a bar chart"""
+    df, df_pre_crisis, df_crisis_recovery, df_post_recovery = load_and_process_data()
+    
+    # Calculate average yearly volume for each period
+    def get_yearly_avg_volume(dataframe, period_name):
+        """Calculate average volume by year"""
+        dataframe['Year'] = dataframe['Date'].dt.year
+        yearly_volume = dataframe.groupby('Year')['Volume'].mean()
+        return yearly_volume
+    
+    yearly_pre_crisis = get_yearly_avg_volume(df_pre_crisis.copy(), 'Pre-2008')
+    yearly_crisis_recovery = get_yearly_avg_volume(df_crisis_recovery.copy(), '2008-2012')
+    yearly_post_recovery = get_yearly_avg_volume(df_post_recovery.copy(), '2013-2017')
+    
+    # Create bar chart
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5))
+    fig.suptitle('Average Yearly Trading Volume by Period', fontsize=16, fontweight='bold')
+    
+    # Pre-2008 Crisis
+    axes[0].bar(yearly_pre_crisis.index, yearly_pre_crisis.values, color='#2E86AB', alpha=0.8)
+    axes[0].set_title('Pre-2008 Financial Crisis\n(1999-2007)', fontweight='bold')
+    axes[0].set_xlabel('Year')
+    axes[0].set_ylabel('Average Volume')
+    axes[0].tick_params(axis='x', rotation=45)
+    axes[0].grid(axis='y', alpha=0.3)
+    
+    # Crisis & Recovery
+    axes[1].bar(yearly_crisis_recovery.index, yearly_crisis_recovery.values, color='#A23B72', alpha=0.8)
+    axes[1].set_title('Financial Crisis & Recovery\n(2008-2012)', fontweight='bold')
+    axes[1].set_xlabel('Year')
+    axes[1].set_ylabel('Average Volume')
+    axes[1].tick_params(axis='x', rotation=45)
+    axes[1].grid(axis='y', alpha=0.3)
+    
+    # Post-Recovery Growth
+    axes[2].bar(yearly_post_recovery.index, yearly_post_recovery.values, color='#F18F01', alpha=0.8)
+    axes[2].set_title('Post-Recovery Growth\n(2013-2017)', fontweight='bold')
+    axes[2].set_xlabel('Year')
+    axes[2].set_ylabel('Average Volume')
+    axes[2].tick_params(axis='x', rotation=45)
+    axes[2].grid(axis='y', alpha=0.3)
+    
+    plt.tight_layout()
+    
+    # Convert plot to base64 image
+    img = io.BytesIO()
+    plt.savefig(img, format='png', dpi=100, bbox_inches='tight')
+    img.seek(0)
+    plot_url = base64.b64encode(img.getvalue()).decode()
+    plt.close()
+    
+    # Create HTML template with chart
+    html_template = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>GS Volume Analysis</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/css/bootstrap.min.css">
+        <style>
+            body {{ padding: 20px; }}
+            .container {{ max-width: 1400px; }}
+            .chart-container {{ margin-top: 30px; text-align: center; }}
+            img {{ max-width: 100%; height: auto; }}
+            .nav-links {{ margin-bottom: 20px; }}
+            a {{ margin-right: 15px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="nav-links">
+                <a href="/" class="btn btn-primary btn-sm">View All Data</a>
+                <a href="/volume-analysis" class="btn btn-info btn-sm">Volume Analysis</a>
+            </div>
+            
+            <h1>Goldman Sachs (GS) - Average Yearly Trading Volume Analysis</h1>
+            <p><strong>Analysis Period:</strong> 1999-2017</p>
+            
+            <div class="chart-container">
+                <img src="data:image/png;base64,{plot_url}" alt="Average Yearly Volume Chart">
+            </div>
+            
+            <div style="margin-top: 40px;">
+                <h3>Period Summary</h3>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Pre-2008 Crisis</h5>
+                                <p class="card-text">Years: 1999-2007</p>
+                                <p class="card-text"><strong>Avg Volume:</strong> {yearly_pre_crisis.mean():,.0f}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Crisis & Recovery</h5>
+                                <p class="card-text">Years: 2008-2012</p>
+                                <p class="card-text"><strong>Avg Volume:</strong> {yearly_crisis_recovery.mean():,.0f}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Post-Recovery Growth</h5>
+                                <p class="card-text">Years: 2013-2017</p>
+                                <p class="card-text"><strong>Avg Volume:</strong> {yearly_post_recovery.mean():,.0f}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    
+    return render_template_string(html_template)
     app.run(debug=True)

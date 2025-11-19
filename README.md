@@ -16,6 +16,8 @@
 
 ### 3rd Commit
 
+- Added a new `/volume-analysis` route that visualizes the average yearly trading volume for all three time periods as a multi-panel bar chart using matplotlib. The visualization displays side-by-side comparisons of average volume trends across the Pre-2008 Crisis, Crisis & Recovery, and Post-Recovery Growth periods, with summary cards showing aggregate statistics for each period. All existing code remains unchanged.
+
 ### 4th Commit
 
 ### 5th Commit

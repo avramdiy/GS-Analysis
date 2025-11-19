@@ -12,6 +12,8 @@
 
 ### 2nd Commit
 
+- Dropped the `OpenInt` column from the original dataframe and created three time-period-based dataframes: (1) **Pre-2008 Financial Crisis** (1999-05-04 to 2007-12-31) representing early market growth, (2) **Financial Crisis & Recovery** (2008-01-01 to 2012-12-31) capturing the impact and recovery from the 2008 financial crisis, and (3) **Post-Recovery Growth** (2013-01-01 to 2017-11-10) showing sustained market recovery and growth. Updated the Flask API to display all three periods with record counts and period descriptions.
+
 ### 3rd Commit
 
 ### 4th Commit

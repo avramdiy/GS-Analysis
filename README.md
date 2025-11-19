@@ -23,3 +23,5 @@
 - Added a new `/price-analysis` route that visualizes the yearly average opening price for all three time periods as a unified line chart with distinct markers and colors for each period. The visualization overlays all three periods on a single chart to show price trends and comparisons across Pre-2008 Crisis, Crisis & Recovery, and Post-Recovery Growth periods, with summary cards displaying average prices and price ranges. All existing code remains unchanged.
 
 ### 5th Commit
+
+- Added a new `/close-analysis` route that visualizes the yearly average closing price for all three time periods as a unified line chart with distinct markers and colors for each period. The visualization overlays all three periods on a single chart to show closing price trends and comparisons across Pre-2008 Crisis, Crisis & Recovery, and Post-Recovery Growth periods, with summary cards displaying average closing prices and price ranges. All existing code remains unchanged.
